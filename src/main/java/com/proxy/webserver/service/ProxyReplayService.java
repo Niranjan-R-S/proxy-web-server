@@ -17,7 +17,7 @@ import java.util.concurrent.*;
 @Service
 public class ProxyReplayService {
 
-    public HashMap<String, Object> replayRequest(RequestParams requestParams) throws IOException, RequestMalformedException, ProtocolNotSupportedException, InterruptedException, ExecutionException, TimeoutException {
+    public HashMap<String, Object> replayRequest(RequestParams requestParams, String ClientID) throws IOException, RequestMalformedException, ProtocolNotSupportedException, InterruptedException, ExecutionException, TimeoutException {
         this.validateParameters(requestParams);
         ExecutorService executor = Executors.newCachedThreadPool();
         Callable<HashMap<String, Object>> task = new Callable<HashMap<String, Object>>() {
@@ -38,9 +38,7 @@ public class ProxyReplayService {
         allowedRequestTypes.add("PUT");
         allowedRequestTypes.add("DELETE");
 
-        if(Strings.isBlank(requestParams.getClientID())){
-            throw new RequestMalformedException("ClientID cannot be empty");
-        } else if (Strings.isBlank(requestParams.getURL())){
+        if (Strings.isBlank(requestParams.getURL())){
             throw new RequestMalformedException("URL cannot be empty");
         } else if (!allowedRequestTypes.contains(requestParams.getHttpRequestType())){
             throw new RequestMalformedException("Allowed values for request types are GET, PUT, POST and Delete");

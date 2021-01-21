@@ -32,7 +32,7 @@ class ProxyControllerTest {
     @Test
     public void shouldReplayRequestAndFetchData() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("MyName", "https://google.com", headers,
+        RequestParams requestParams = new RequestParams("https://google.com", headers,
                 "", "POST");
 
         HashMap<String, Object> proxyResponse = new HashMap<>();
@@ -42,11 +42,11 @@ class ProxyControllerTest {
         proxyResponse.put("response", serverResponse);
         proxyResponse.put("statusCode", 200);
 
-        when(proxyReplayService.replayRequest(any(RequestParams.class))).thenReturn(proxyResponse);
+        when(proxyReplayService.replayRequest(any(RequestParams.class), any())).thenReturn(proxyResponse);
 
         ObjectMapper requestMapper = new ObjectMapper();
 
-        mockMvc.perform(post("/proxyReplay")
+        mockMvc.perform(post("/proxyReplay?ClientID=MyName")
                 .content(requestMapper.writeValueAsString(requestParams))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
@@ -58,14 +58,14 @@ class ProxyControllerTest {
     @Test
     public void shouldReturnInternalServerErrorIfServiceFailsToReplayRequest() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("MyName", "https://somewebsite.com", headers,
+        RequestParams requestParams = new RequestParams("https://somewebsite.com", headers,
                 "", "POST");
 
-        when(proxyReplayService.replayRequest(any(RequestParams.class))).thenThrow();
+        when(proxyReplayService.replayRequest(any(RequestParams.class), any())).thenThrow();
 
         ObjectMapper requestMapper = new ObjectMapper();
 
-        mockMvc.perform(post("/proxyReplay")
+        mockMvc.perform(post("/proxyReplay?ClientID=MyName")
                 .content(requestMapper.writeValueAsString(requestParams))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().is5xxServerError());
@@ -75,10 +75,34 @@ class ProxyControllerTest {
     @Test
     public void shouldReturnBadRequestIfRequestParamsAreInvalid() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("", "https://somewebsite.com", headers,
+        RequestParams requestParams = new RequestParams("https://somewebsite.com", headers,
+                "", "Patch");
+
+        when(proxyReplayService.replayRequest(any(RequestParams.class), any())).thenThrow(new RequestMalformedException("Bad request"));
+
+        ObjectMapper requestMapper = new ObjectMapper();
+
+        mockMvc.perform(post("/proxyReplay?ClientID=MyName")
+                .content(requestMapper.writeValueAsString(requestParams))
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().is4xxClientError());
+
+    }
+
+    @Test
+    public void shouldReturnBadRequestIfClientIDIsNotProvidedInTheRequest() throws Exception {
+        HashMap<?,?> headers = new HashMap<>();
+        RequestParams requestParams = new RequestParams("https://google.com", headers,
                 "", "POST");
 
-        when(proxyReplayService.replayRequest(any(RequestParams.class))).thenThrow(new RequestMalformedException("Bad request"));
+        HashMap<String, Object> proxyResponse = new HashMap<>();
+        HashMap<Object, Object> serverResponse = new HashMap<>();
+        serverResponse.put("id", 1);
+        serverResponse.put("userId", 1);
+        proxyResponse.put("response", serverResponse);
+        proxyResponse.put("statusCode", 200);
+
+        when(proxyReplayService.replayRequest(any(RequestParams.class), any())).thenReturn(proxyResponse);
 
         ObjectMapper requestMapper = new ObjectMapper();
 
@@ -92,14 +116,14 @@ class ProxyControllerTest {
     @Test
     public void shouldReturnProtocolNotSupportedIfProtocolOfURLIsHTTP() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("", "http://somewebsite.com", headers,
+        RequestParams requestParams = new RequestParams("http://somewebsite.com", headers,
                 "", "POST");
 
-        when(proxyReplayService.replayRequest(any(RequestParams.class))).thenThrow(new ProtocolNotSupportedException("Unsupported protocol"));
+        when(proxyReplayService.replayRequest(any(RequestParams.class), any())).thenThrow(new ProtocolNotSupportedException("Unsupported protocol"));
 
         ObjectMapper requestMapper = new ObjectMapper();
 
-        mockMvc.perform(post("/proxyReplay")
+        mockMvc.perform(post("/proxyReplay?ClientID=MyName")
                 .content(requestMapper.writeValueAsString(requestParams))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().is4xxClientError());
@@ -109,14 +133,14 @@ class ProxyControllerTest {
     @Test
     public void shouldReturnTimeoutIfTimeTakenToProcessIsMoreThan5Seconds() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("MyName", "https://somewebsite.com", headers,
+        RequestParams requestParams = new RequestParams("https://somewebsite.com", headers,
                 "", "POST");
 
-        when(proxyReplayService.replayRequest(any(RequestParams.class))).thenThrow(new TimeoutException("Request took more than 5 seconds"));
+        when(proxyReplayService.replayRequest(any(RequestParams.class), any())).thenThrow(new TimeoutException("Request took more than 5 seconds"));
 
         ObjectMapper requestMapper = new ObjectMapper();
 
-        mockMvc.perform(post("/proxyReplay")
+        mockMvc.perform(post("/proxyReplay?ClientID=MyName")
                 .content(requestMapper.writeValueAsString(requestParams))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isGatewayTimeout());

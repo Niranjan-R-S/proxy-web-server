@@ -19,7 +19,6 @@ public class RequestClient {
         ArrayList<String> updateMethods = new ArrayList<>();
         updateMethods.add("POST");
         updateMethods.add("PUT");
-        updateMethods.add("PATCH");
 
         URL siteUrl = new URL(requestParams.getURL());
         HttpURLConnection connection = (HttpURLConnection) siteUrl.openConnection();

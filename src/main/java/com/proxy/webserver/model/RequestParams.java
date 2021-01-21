@@ -5,26 +5,16 @@ import org.apache.logging.log4j.util.Strings;
 import java.util.HashMap;
 
 public class RequestParams {
-    private String ClientID;
     private String URL;
     private HashMap<?, ?> Headers;
     private String RequestBody;
     private String HttpRequestType;
 
-    public RequestParams(String ClientID, String URL, HashMap<?, ?> Headers, String RequestBody, String HttpRequestType) {
-        this.ClientID = ClientID;
+    public RequestParams(String URL, HashMap<?, ?> Headers, String RequestBody, String HttpRequestType) {
         this.URL = URL;
         this.Headers = Headers;
         this.RequestBody = RequestBody;
         this.HttpRequestType = HttpRequestType;
-    }
-
-    public String getClientID() {
-        return this.ClientID;
-    }
-
-    public void setClientID(String clientID) {
-        this.ClientID = clientID;
     }
 
     public String getURL() {

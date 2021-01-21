@@ -24,10 +24,10 @@ class ProxyReplayServiceTest {
     @Test
     public void shouldReplayGetRequest() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("MyName", "https://jsonplaceholder.typicode.com/todos/1", headers,
+        RequestParams requestParams = new RequestParams("https://jsonplaceholder.typicode.com/todos/1", headers,
                 "", "GET");
 
-        HashMap<String, Object> response = proxyReplayService.replayRequest(requestParams);
+        HashMap<String, Object> response = proxyReplayService.replayRequest(requestParams, "MyName");
 
         assertEquals(200, response.get("statusCode"));
     }
@@ -35,10 +35,10 @@ class ProxyReplayServiceTest {
     @Test
     public void shouldReplayPostRequest() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("MyName", "https://jsonplaceholder.typicode.com/posts", headers,
+        RequestParams requestParams = new RequestParams( "https://jsonplaceholder.typicode.com/posts", headers,
                 "{'title':'foo','body':'bar','userId':1}", "Post");
 
-        HashMap<String, Object> response = proxyReplayService.replayRequest(requestParams);
+        HashMap<String, Object> response = proxyReplayService.replayRequest(requestParams, "MyName");
 
         assertEquals(201, response.get("statusCode"));
     }
@@ -48,10 +48,10 @@ class ProxyReplayServiceTest {
         HashMap<String,String> headers = new HashMap<>();
         headers.put("Content-type", "application/json");
         headers.put("charset", "UTF-8");
-        RequestParams requestParams = new RequestParams("MyName", "https://jsonplaceholder.typicode.com/posts/1", headers,
+        RequestParams requestParams = new RequestParams("https://jsonplaceholder.typicode.com/posts/1", headers,
                 "{'id':1,'title':'foo','body':'bar','userId':1}", "Put");
 
-        HashMap<String, Object> response = proxyReplayService.replayRequest(requestParams);
+        HashMap<String, Object> response = proxyReplayService.replayRequest(requestParams, "MyName");
 
         assertEquals(200, response.get("statusCode"));
     }
@@ -59,47 +59,38 @@ class ProxyReplayServiceTest {
     @Test
     public void shouldReplayDeleteRequest() throws Exception {
         HashMap<String,String> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("MyName", "https://jsonplaceholder.typicode.com/posts/1", headers,
+        RequestParams requestParams = new RequestParams("https://jsonplaceholder.typicode.com/posts/1", headers,
                 "", "Delete");
 
-        HashMap<String, Object> response = proxyReplayService.replayRequest(requestParams);
+        HashMap<String, Object> response = proxyReplayService.replayRequest(requestParams, "MyName");
 
         assertEquals(200, response.get("statusCode"));
     }
 
     @Test
-    public void shouldThrowMalformedRequestIfClientIDIsEmpty() throws Exception {
-        HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("", "https://jsonplaceholder.typicode.com/todos/1", headers,
-                "", "GET");
-
-        assertThrows(RequestMalformedException.class, ()->proxyReplayService.replayRequest(requestParams));
-    }
-
-    @Test
     public void shouldThrowMalformedRequestIfRequestTypeIsNotValid() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("MyName", "https://jsonplaceholder.typicode.com/todos/1", headers,
+        RequestParams requestParams = new RequestParams( "https://jsonplaceholder.typicode.com/todos/1", headers,
                 "", "Patch");
 
-        assertThrows(RequestMalformedException.class, ()->proxyReplayService.replayRequest(requestParams));
+        assertThrows(RequestMalformedException.class, ()->proxyReplayService.replayRequest(requestParams, "MyName"));
     }
 
     @Test
     public void shouldThrowMalformedRequestIfRequestURLIsEmpty() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("MyName", "", headers,
+        RequestParams requestParams = new RequestParams( "", headers,
                 "", "GET");
 
-        assertThrows(RequestMalformedException.class, ()->proxyReplayService.replayRequest(requestParams));
+        assertThrows(RequestMalformedException.class, ()->proxyReplayService.replayRequest(requestParams, "MyName"));
     }
 
     @Test
     public void shouldThrowRequestMalformedExceptionIfURLProtocolIsHTTP() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("MyName", "http://jsonplaceholder.typicode.com/todos", headers,
+        RequestParams requestParams = new RequestParams( "http://jsonplaceholder.typicode.com/todos", headers,
                 "", "GET");
 
-        assertThrows(ProtocolNotSupportedException.class, ()->proxyReplayService.replayRequest(requestParams));
+        assertThrows(ProtocolNotSupportedException.class, ()->proxyReplayService.replayRequest(requestParams, "MyName"));
     }
 }
