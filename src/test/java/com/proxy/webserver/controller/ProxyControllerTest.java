@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.HashMap;
+import java.util.concurrent.TimeoutException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -102,6 +103,23 @@ class ProxyControllerTest {
                 .content(requestMapper.writeValueAsString(requestParams))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().is4xxClientError());
+
+    }
+
+    @Test
+    public void shouldReturnTimeoutIfTimeTakenToProcessIsMoreThan5Seconds() throws Exception {
+        HashMap<?,?> headers = new HashMap<>();
+        RequestParams requestParams = new RequestParams("MyName", "https://somewebsite.com", headers,
+                "", "POST");
+
+        when(proxyReplayService.replayRequest(any(RequestParams.class))).thenThrow(new TimeoutException("Request took more than 5 seconds"));
+
+        ObjectMapper requestMapper = new ObjectMapper();
+
+        mockMvc.perform(post("/proxyReplay")
+                .content(requestMapper.writeValueAsString(requestParams))
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isGatewayTimeout());
 
     }
 }

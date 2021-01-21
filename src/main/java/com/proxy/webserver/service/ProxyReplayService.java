@@ -12,13 +12,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.*;
 
 @Service
 public class ProxyReplayService {
 
-    public HashMap<String, Object> replayRequest(RequestParams requestParams) throws IOException, RequestMalformedException, ProtocolNotSupportedException {
+    public HashMap<String, Object> replayRequest(RequestParams requestParams) throws IOException, RequestMalformedException, ProtocolNotSupportedException, InterruptedException, ExecutionException, TimeoutException {
         this.validateParameters(requestParams);
-        return RequestClient.makeRequest(requestParams);
+        ExecutorService executor = Executors.newCachedThreadPool();
+        Callable<HashMap<String, Object>> task = new Callable<HashMap<String, Object>>() {
+            public HashMap<String, Object> call() throws IOException {
+                return RequestClient.makeRequest(requestParams);
+            }
+        };
+        Future<HashMap<String, Object>> future = executor.submit(task);
+        HashMap<String, Object> result = future.get(5, TimeUnit.SECONDS);
+        future.cancel(true);
+        return result;
     }
 
     private void validateParameters(RequestParams requestParams) throws RequestMalformedException, MalformedURLException, ProtocolNotSupportedException {

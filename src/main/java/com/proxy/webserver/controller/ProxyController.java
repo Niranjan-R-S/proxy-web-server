@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.concurrent.TimeoutException;
 
 @RestController
 @RequestMapping("/proxyReplay")
@@ -30,6 +31,8 @@ public class ProxyController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (ProtocolNotSupportedException exception){
             return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
+        } catch (TimeoutException exception){
+            return new ResponseEntity<>(HttpStatus.GATEWAY_TIMEOUT);
         } catch (Exception exception){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
