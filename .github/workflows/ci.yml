@@ -35,7 +35,7 @@ jobs:
         name: Test report
         path: build/test-results/test/TEST-*.xml
     - name: Create openapi documents
-        run: ./gradlew clean generateOpenApiDocs
+      run: ./gradlew clean generateOpenApiDocs
     - name: Upload OpenApi artifact
       uses: actions/upload-artifact@v2
       with:
