@@ -1,6 +1,8 @@
 package com.proxy.webserver.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.proxy.webserver.exception.ProtocolNotSupportedException;
+import com.proxy.webserver.exception.RequestMalformedException;
 import com.proxy.webserver.model.RequestParams;
 import com.proxy.webserver.service.ProxyReplayService;
 import org.junit.jupiter.api.Test;
@@ -29,7 +31,7 @@ class ProxyControllerTest {
     @Test
     public void shouldReplayRequestAndFetchData() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
-        RequestParams requestParams = new RequestParams("MyName", "https://somewebsite.com", headers,
+        RequestParams requestParams = new RequestParams("MyName", "https://google.com", headers,
                 "", "POST");
 
         HashMap<String, Object> proxyResponse = new HashMap<>();
@@ -39,7 +41,7 @@ class ProxyControllerTest {
         proxyResponse.put("response", serverResponse);
         proxyResponse.put("statusCode", 200);
 
-        when(proxyReplayService.replayRequest(any())).thenReturn(proxyResponse);
+        when(proxyReplayService.replayRequest(any(RequestParams.class))).thenReturn(proxyResponse);
 
         ObjectMapper requestMapper = new ObjectMapper();
 
@@ -53,12 +55,12 @@ class ProxyControllerTest {
     }
 
     @Test
-    public void shouldReturnInternalServerErrorIfExceptionThrownFromService() throws Exception {
+    public void shouldReturnInternalServerErrorIfServiceFailsToReplayRequest() throws Exception {
         HashMap<?,?> headers = new HashMap<>();
         RequestParams requestParams = new RequestParams("MyName", "https://somewebsite.com", headers,
                 "", "POST");
 
-        when(proxyReplayService.replayRequest(any())).thenThrow();
+        when(proxyReplayService.replayRequest(any(RequestParams.class))).thenThrow();
 
         ObjectMapper requestMapper = new ObjectMapper();
 
@@ -66,6 +68,40 @@ class ProxyControllerTest {
                 .content(requestMapper.writeValueAsString(requestParams))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().is5xxServerError());
+
+    }
+
+    @Test
+    public void shouldReturnBadRequestIfRequestParamsAreInvalid() throws Exception {
+        HashMap<?,?> headers = new HashMap<>();
+        RequestParams requestParams = new RequestParams("", "https://somewebsite.com", headers,
+                "", "POST");
+
+        when(proxyReplayService.replayRequest(any(RequestParams.class))).thenThrow(new RequestMalformedException("Bad request"));
+
+        ObjectMapper requestMapper = new ObjectMapper();
+
+        mockMvc.perform(post("/proxyReplay")
+                .content(requestMapper.writeValueAsString(requestParams))
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().is4xxClientError());
+
+    }
+
+    @Test
+    public void shouldReturnProtocolNotSupportedIfProtocolOfURLIsHTTP() throws Exception {
+        HashMap<?,?> headers = new HashMap<>();
+        RequestParams requestParams = new RequestParams("", "http://somewebsite.com", headers,
+                "", "POST");
+
+        when(proxyReplayService.replayRequest(any(RequestParams.class))).thenThrow(new ProtocolNotSupportedException("Unsupported protocol"));
+
+        ObjectMapper requestMapper = new ObjectMapper();
+
+        mockMvc.perform(post("/proxyReplay")
+                .content(requestMapper.writeValueAsString(requestParams))
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().is4xxClientError());
 
     }
 }

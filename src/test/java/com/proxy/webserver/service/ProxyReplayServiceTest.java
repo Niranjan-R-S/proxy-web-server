@@ -1,5 +1,6 @@
 package com.proxy.webserver.service;
 
+import com.proxy.webserver.exception.ProtocolNotSupportedException;
 import com.proxy.webserver.exception.RequestMalformedException;
 import com.proxy.webserver.model.RequestParams;
 import org.junit.jupiter.api.Test;
@@ -91,5 +92,14 @@ class ProxyReplayServiceTest {
                 "", "GET");
 
         assertThrows(RequestMalformedException.class, ()->proxyReplayService.replayRequest(requestParams));
+    }
+
+    @Test
+    public void shouldThrowRequestMalformedExceptionIfURLProtocolIsHTTP() throws Exception {
+        HashMap<?,?> headers = new HashMap<>();
+        RequestParams requestParams = new RequestParams("MyName", "http://jsonplaceholder.typicode.com/todos", headers,
+                "", "GET");
+
+        assertThrows(ProtocolNotSupportedException.class, ()->proxyReplayService.replayRequest(requestParams));
     }
 }

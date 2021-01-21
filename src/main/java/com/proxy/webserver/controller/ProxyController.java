@@ -1,5 +1,7 @@
 package com.proxy.webserver.controller;
 
+import com.proxy.webserver.exception.ProtocolNotSupportedException;
+import com.proxy.webserver.exception.RequestMalformedException;
 import com.proxy.webserver.model.RequestParams;
 import com.proxy.webserver.service.ProxyReplayService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +26,11 @@ public class ProxyController {
         try{
             HashMap<String, Object> response = proxyReplayService.replayRequest(requestParams);
             return new ResponseEntity<>(response.get("response"), HttpStatus.valueOf((Integer) response.get("statusCode")));
-        }catch (Exception exception){
+        } catch (RequestMalformedException exception){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (ProtocolNotSupportedException exception){
+            return new ResponseEntity<>(HttpStatus.METHOD_NOT_ALLOWED);
+        } catch (Exception exception){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
