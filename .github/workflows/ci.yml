@@ -24,6 +24,8 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
+    - name: Create openapi documents
+      run: ./gradlew clean generateOpenApiDocs
     - name: Upload build artifact
       uses: actions/upload-artifact@v2
       with:
@@ -34,3 +36,8 @@ jobs:
       with:
         name: Test report
         path: build/test-results/test/TEST-*.xml
+    - name: Upload OpenApi artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Open Api documeny
+        path: build/openapi.json
