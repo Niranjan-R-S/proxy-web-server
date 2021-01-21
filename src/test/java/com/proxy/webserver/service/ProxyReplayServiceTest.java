@@ -1,5 +1,6 @@
 package com.proxy.webserver.service;
 
+import com.proxy.webserver.exception.RequestMalformedException;
 import com.proxy.webserver.model.RequestParams;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest
@@ -62,5 +64,32 @@ class ProxyReplayServiceTest {
         HashMap<String, Object> response = proxyReplayService.replayRequest(requestParams);
 
         assertEquals(200, response.get("statusCode"));
+    }
+
+    @Test
+    public void shouldThrowMalformedRequestIfClientIDIsEmpty() throws Exception {
+        HashMap<?,?> headers = new HashMap<>();
+        RequestParams requestParams = new RequestParams("", "https://jsonplaceholder.typicode.com/todos/1", headers,
+                "", "GET");
+
+        assertThrows(RequestMalformedException.class, ()->proxyReplayService.replayRequest(requestParams));
+    }
+
+    @Test
+    public void shouldThrowMalformedRequestIfRequestTypeIsNotValid() throws Exception {
+        HashMap<?,?> headers = new HashMap<>();
+        RequestParams requestParams = new RequestParams("MyName", "https://jsonplaceholder.typicode.com/todos/1", headers,
+                "", "Patch");
+
+        assertThrows(RequestMalformedException.class, ()->proxyReplayService.replayRequest(requestParams));
+    }
+
+    @Test
+    public void shouldThrowMalformedRequestIfRequestURLIsEmpty() throws Exception {
+        HashMap<?,?> headers = new HashMap<>();
+        RequestParams requestParams = new RequestParams("MyName", "", headers,
+                "", "GET");
+
+        assertThrows(RequestMalformedException.class, ()->proxyReplayService.replayRequest(requestParams));
     }
 }
