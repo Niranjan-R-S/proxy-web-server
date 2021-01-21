@@ -43,7 +43,13 @@ public class RequestThrottleFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-        String clientID = httpServletRequest.getParameter("ClientID");
+        String clientID;
+        if(httpServletRequest.getRequestURL().toString().contains("/proxyReplay")){
+            clientID = httpServletRequest.getParameter("ClientID");
+        }else{
+            clientID = "System";
+        }
+
         if(clientID == null){
             httpServletResponse.setStatus(HttpStatus.BAD_REQUEST.value());
             httpServletResponse.getWriter().write("ClientID is required");
