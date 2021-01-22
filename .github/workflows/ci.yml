@@ -27,7 +27,7 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v2
       with:
-        name: Build artifacts
+        name: Build artifact
         path: build/libs  
     - name: Upload Test results
       uses: actions/upload-artifact@v2
@@ -39,5 +39,5 @@ jobs:
     - name: Upload OpenApi artifact
       uses: actions/upload-artifact@v2
       with:
-        name: Open Api documeny
+        name: Open Api document
         path: build/openapi.json
