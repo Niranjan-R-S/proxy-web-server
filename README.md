@@ -13,7 +13,7 @@ To build the project use the command `./gradlew build`
 To run the spring-boot application use the command `./gradlew bootRun`
 
 ### Swagger
-To view the swagger api documentation, visit the page `http:localhost:8080/swagger-ui.html`
+To view the swagger api documentation, visit the page `http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config#/`
 
 ### OpenAPi
 To generate the openapi json use the command in the terminal `gradle clean generateOpenApiDocs` .
