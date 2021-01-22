@@ -32,11 +32,7 @@ public class ProxyReplayService {
     }
 
     private void validateParameters(RequestParams requestParams) throws RequestMalformedException, MalformedURLException, ProtocolNotSupportedException {
-        ArrayList<String> allowedRequestTypes = new ArrayList<>();
-        allowedRequestTypes.add("GET");
-        allowedRequestTypes.add("POST");
-        allowedRequestTypes.add("PUT");
-        allowedRequestTypes.add("DELETE");
+        ArrayList<String> allowedRequestTypes = getAllowedHttpMethods();
 
         if (Strings.isBlank(requestParams.getURL())){
             throw new RequestMalformedException("URL cannot be empty");
@@ -49,6 +45,15 @@ public class ProxyReplayService {
         if(!url.getProtocol().equals("https")){
             throw new ProtocolNotSupportedException("Only http calls are supported");
         }
+    }
+
+    private ArrayList<String> getAllowedHttpMethods() {
+        ArrayList<String> allowedRequestTypes = new ArrayList<>();
+        allowedRequestTypes.add("GET");
+        allowedRequestTypes.add("POST");
+        allowedRequestTypes.add("PUT");
+        allowedRequestTypes.add("DELETE");
+        return allowedRequestTypes;
     }
 
 }

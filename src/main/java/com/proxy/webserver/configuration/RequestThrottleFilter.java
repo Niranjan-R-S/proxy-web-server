@@ -2,17 +2,13 @@ package com.proxy.webserver.configuration;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.io.CharStreams;
-import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -21,11 +17,11 @@ public class RequestThrottleFilter implements Filter {
 
     private int MAX_REQUESTS_PER_MINUTE = 50;
 
-    private LoadingCache<String, Integer> requestCountsPerIpAddress;
+    private LoadingCache<String, Integer> requestCountsPerClientID;
 
     public RequestThrottleFilter(){
         super();
-        requestCountsPerIpAddress = CacheBuilder.newBuilder().
+        requestCountsPerClientID = CacheBuilder.newBuilder().
                 expireAfterWrite(1, TimeUnit.MINUTES).build(new CacheLoader<String, Integer>() {
             public Integer load(String key) {
                 return 0;
@@ -67,16 +63,16 @@ public class RequestThrottleFilter implements Filter {
     private boolean isMaximumRequestsPerSecondExceeded(String clientID){
         int requests = 0;
         try {
-            requests = requestCountsPerIpAddress.get(clientID);
+            requests = requestCountsPerClientID.get(clientID);
             if(requests > MAX_REQUESTS_PER_MINUTE){
-                requestCountsPerIpAddress.put(clientID, requests);
+                requestCountsPerClientID.put(clientID, requests);
                 return true;
             }
         } catch (ExecutionException e) {
             requests = 0;
         }
         requests++;
-        requestCountsPerIpAddress.put(clientID, requests);
+        requestCountsPerClientID.put(clientID, requests);
         return false;
     }
 
